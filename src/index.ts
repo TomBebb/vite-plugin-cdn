@@ -1,50 +1,60 @@
 import { Plugin } from 'vite'
-import { ImportMap } from './types'
-
+import { ImportMap, PkgRef } from './types'
+import { CdnConfig } from './types'
+import { Cdn, getCdnPath } from './source'
+import {join} from "path"
+import fs from "fs/promises"
 const prefix = '/@import-maps/'
-export function importMaps(options: ImportMap[] | (() => ImportMap[])): Plugin {
-  if (typeof options === 'function') options = options()
-  const oriImportMap: Required<ImportMap> = Object.assign(
-    { imports: {}, scope: {} },
-    ...options,
-  )
 
-  const importMap: Required<ImportMap> = {
-    imports: {
-      ...oriImportMap.imports,
-      ...Object.keys(oriImportMap.imports).reduce(
-        (acc, imp) => ({
-          ...acc,
-          [`${prefix}${imp}`]: oriImportMap.imports[imp],
-        }),
-        {},
-      ),
-    },
-    scope: {
-      ...oriImportMap.scope,
-    },
-  }
 
+function getImportMap(conf: Cdn, pkgs: PkgRef[]): ImportMap {
   return {
-    name: 'vite-plugin-import-maps',
-    config() {
+
+    imports: Object.fromEntries(pkgs.map(p =>[ p.name, getCdnPath( conf, p)]))
+  }
+}
+
+
+export default function vitePluginCdn(conf: CdnConfig = {source: "jsdelivr"}): Plugin {
+
+  let pkgRefs: PkgRef[] = []
+  //const imports = getImportMap(conf.source!, )
+  //console.log()
+  return {
+    name: 'vite-plugin-cdn',
+    
+    async config(conf, env) {
+
+      const projectPkg = join(process.cwd(), "package.json")
+
+      const content = await fs.readFile(projectPkg, "utf8")
+
+      const {dependencies: deps} = JSON.parse(content)
+      console.log(deps)
+       pkgRefs = Object.entries(deps).map(d => ({
+        name: String(d[0]!),
+        version: d[1] === "*" ? undefined : String(d[1]!)
+      }))
+      console.log('refs', pkgRefs)
+
+      console.log('config', conf)
+      console.log('end', env)
       return {
-        resolve: {
-          alias: {
-            ...Object.keys(importMap.imports).reduce(
-              (acc, imp) => ({ ...acc, [imp]: `${prefix}${imp}` }),
-              {},
-            ),
-          },
+        build: {
+          rollupOptions: {
+            external: pkgRefs.map(r => r.name)
+          }
         },
-        // optimizeDeps: {
-        //   include: Object.keys(oriImportMap.imports),
-        // },
+         optimizeDeps: {
+          exclude: pkgRefs.map(r => r.name),
+       },
       }
     },
     transformIndexHtml: {
       enforce: 'pre',
       transform(html) {
+        const importMap = getImportMap(conf.source!,  pkgRefs)
+        console.log('transformHtml', conf, importMap)
         return {
           html,
           tags: [

@@ -1,17 +1,12 @@
-const { defineConfig } = require('vite')
-const { importMaps } = require('vite-plugin-import-maps')
+import { defineConfig } from 'vite'
+import cdn from 'vite-plugin-cdn'
 
-module.exports = defineConfig({
+export default defineConfig({
   plugins: [
-    importMaps([
-      {
-        imports: {
-          lodash: 'https://esm.sh/lodash-es@4.17.20',
-        },
-      },
-    ]),
+    cdn(),
   ],
   build: {
+    target: "esnext",
     rollupOptions: {
       external: ['loadsh'],
     },
