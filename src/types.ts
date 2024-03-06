@@ -6,6 +6,7 @@ export type ImportMap = {
 }
 export interface CdnConfig {
   source?: Cdn
+  exclude?: string[]
 }
 export interface PkgRef {
   name: string
