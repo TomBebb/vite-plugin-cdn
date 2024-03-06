@@ -24,6 +24,7 @@ export default function vitePluginCdn(
       const content = await fs.readFile(projectPkg, 'utf8')
 
       const { dependencies: deps } = JSON.parse(content)
+      console.log('read package', projectPkg, deps)
       pkgRefs = Object.entries(deps)
         .map(d => ({
           name: String(d[0]!),
@@ -43,8 +44,8 @@ export default function vitePluginCdn(
       }
     },
     transformIndexHtml: {
-      enforce: 'pre',
-      transform(html) {
+      order: 'pre',
+      handler(html) {
         const importMap = getImportMap(conf.source!, pkgRefs)
         return {
           html,
