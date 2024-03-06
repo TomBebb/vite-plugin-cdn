@@ -11,7 +11,7 @@ This plugin by default tries to resolve all dependencies as CDN libraries.
 Simply add CDN plugin in vite.config
 
 ```javascript
-// vite.config.js
+// vite.config.ts
 const { defineConfig } = require('vite')
 import cdn from 'vite-plugin-map-cdn'
 
