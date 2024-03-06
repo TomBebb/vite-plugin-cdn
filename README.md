@@ -1,34 +1,30 @@
-# vite-plugin-import-maps
+# vite-plugin-cdn-map
 
-Use native browser import-maps in vite. What's [import-maps](https://github.com/WICG/import-maps)
+Use native browser import-maps in vite for CDN resolution. What's [import-maps](https://github.com/WICG/import-maps)
 
-[![NPM](https://nodei.co/npm/vite-plugin-import-maps.png)](https://npmjs.org/package/vite-plugin-import-maps/)
+This plugin by default tries to resolve all dependencies as CDN libraries.
+
+[![NPM](https://nodei.co/npm/vite-plugin-map-cdn.png)](https://npmjs.org/package/vite-plugin-import-maps/)
 
 ## Usage
 
-Simply add import-maps plugin in vite.config
+Simply add CDN plugin in vite.config
 
 ```javascript
 // vite.config.js
 const { defineConfig } = require('vite')
-const { importMaps } = require('vite-plugin-import-maps')
+import cdn from 'vite-plugin-map-cdn'
 
-module.exports = defineConfig({
+export default defineConfig({
   plugins: [
-    importMaps([
-      {
-        imports: {
-          lodash: 'https://esm.sh/lodash-es@4.17.20',
-        },
-      },
-    ]),
+    cdn({cdn: "unpkg.sh"})
   ],
 })
 ```
 
-Then your module will import from cdn instead of vite pre-bundle module.
+Then your module will import from cdn instead of vite pre-bundling it.
 
-Cuz it use native import-maps, itt also allow you to use module in runtime.
+Because this solution uses native import-maps, itt also allow you to use module in runtime:
 
 ```html
 <!-- index.html -->
@@ -39,13 +35,6 @@ Cuz it use native import-maps, itt also allow you to use module in runtime.
   console.log(isNaN(NaN)) // true
 </script>
 ```
-
-## Limitation
-
-Until now, only Chrome implements the import-maps feature. But it is easy to use a polyfill with [es-module-shims](https://github.com/guybedford/es-module-shims).
-
-And to be ware, due to there is no way for vite to unresolve bare moduleId now, this plugin use an alia with the preifx `/@import-maps/`, which means `import 'lodash'` will transform to `import '/@import-maps/lodash'`.
-
 ## License
 
 [MIT](LICENSE)

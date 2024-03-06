@@ -11,7 +11,7 @@
   "repository": "https://github.com/pakholeung37/vite-plugin-import-maps",
   "scripts": {
     "build": "tsup",
-    "format": "prettier src --write"
+    "format": "prettier --write ."
   },
   "keywords": [
     "vite",

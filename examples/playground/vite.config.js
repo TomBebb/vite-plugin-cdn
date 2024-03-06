@@ -2,11 +2,9 @@ import { defineConfig } from 'vite'
 import cdn from 'vite-plugin-cdn'
 
 export default defineConfig({
-  plugins: [
-    cdn(),
-  ],
+  plugins: [cdn()],
   build: {
-    target: "esnext",
+    target: 'esnext',
     rollupOptions: {
       external: ['loadsh'],
     },
