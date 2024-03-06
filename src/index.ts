@@ -15,11 +15,16 @@ export default function vitePluginCdn(
   conf: CdnConfig = { source: 'jsdelivr' },
 ): Plugin {
   const exclude = new Set<string>(conf.exclude)
+  let skip = false
   let pkgRefs: PkgRef[] = []
   return {
     name: 'vite-plugin-cdn',
 
     async config(conf, env) {
+      if (env.command !== 'build') {
+        skip = true
+        return {}
+      }
       const projectPkg = join(process.cwd(), 'package.json')
 
       const content = await fs.readFile(projectPkg, 'utf8')
@@ -45,6 +50,7 @@ export default function vitePluginCdn(
     transformIndexHtml: {
       order: 'pre',
       async handler(html) {
+        if (skip) return { html, tags: [] }
         const importMap = getImportMap(conf.source ?? 'jsdelivr', pkgRefs)
         const children = JSON.stringify(importMap, null, 2)
         return {
