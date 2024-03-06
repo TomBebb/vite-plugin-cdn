@@ -5,8 +5,9 @@ import { Cdn, getCdnPath } from './source'
 import { join } from 'path'
 import fs from 'fs/promises'
 function getImportMap(conf: Cdn, pkgs: PkgRef[]): ImportMap {
+  const mappedImports = pkgs.map(p => [p.name, getCdnPath(conf, p)])
   return {
-    imports: Object.fromEntries(pkgs.map(p => [p.name, getCdnPath(conf, p)])),
+    imports: Object.fromEntries(mappedImports),
   }
 }
 
@@ -24,14 +25,12 @@ export default function vitePluginCdn(
       const content = await fs.readFile(projectPkg, 'utf8')
 
       const { dependencies: deps } = JSON.parse(content)
-      console.log('read package', projectPkg, deps)
       pkgRefs = Object.entries(deps)
         .map(d => ({
           name: String(d[0]!),
           version: d[1] === '*' ? undefined : String(d[1]!),
         }))
         .filter(p => !exclude.has(p.name))
-
       return {
         build: {
           rollupOptions: {
@@ -45,8 +44,9 @@ export default function vitePluginCdn(
     },
     transformIndexHtml: {
       order: 'pre',
-      handler(html) {
-        const importMap = getImportMap(conf.source!, pkgRefs)
+      async handler(html) {
+        const importMap = getImportMap(conf.source ?? 'jsdelivr', pkgRefs)
+        const children = JSON.stringify(importMap, null, 2)
         return {
           html,
           tags: [
@@ -55,7 +55,7 @@ export default function vitePluginCdn(
               attrs: {
                 type: 'importmap',
               },
-              children: JSON.stringify(importMap, null, 2),
+              children,
               injectTo: 'head-prepend',
             },
           ],
