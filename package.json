@@ -1,8 +1,9 @@
 {
-  "name": "vite-plugin-cdn",
+  "name": "vite-plugin-map-cdn",
   "version": "0.1.0",
   "description": "Use dependencies from CDNs using import-maps in vite",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
